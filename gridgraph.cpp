@@ -4,6 +4,10 @@
 
 #include "gridgraph.h"
 
+/* FUNCTION: Default constructor for the graph when no arguments are given.
+ * ARGUMENTS: Uses global constants as parameters (Set in 'gridgraph.h') 
+ * RETURN: Returns no values.
+ */
 gridgraph::gridgraph(int rows_in_grid, int columns_in_grid)
 {
     row_size = columns_in_grid;
@@ -11,6 +15,11 @@ gridgraph::gridgraph(int rows_in_grid, int columns_in_grid)
     init();
 }
 
+
+/* FUNCTION: Constructor for the graph when the size of the grid (rows by columns) is given.
+ * ARGUMENTS: the number of rows and the number of columns. 
+ * RETURN: Returns no values.
+ */
 gridgraph::gridgraph(const unsigned short & rows_in_grid, const unsigned short & columns_in_grid)
 {
     row_size = columns_in_grid;
@@ -18,6 +27,11 @@ gridgraph::gridgraph(const unsigned short & rows_in_grid, const unsigned short &
     init();
 }
 
+
+/* FUNCTION: Constructor for abstract base vertex.
+ * ARGUMENTS: the position of the vertex along the array of vertices, and its position (x, y) in the grid.
+ * RETURN: Returns no values.
+ */
 vertex::vertex(const unsigned short & pos, const unsigned short & x, const unsigned short & y)
 {
     tile_number = 0;
@@ -26,16 +40,31 @@ vertex::vertex(const unsigned short & pos, const unsigned short & x, const unsig
     y_pos = y;
 }
 
-corner::corner(const unsigned short & p, const unsigned short & x, const unsigned short & y) : vertex(p,x,y)
+
+/* FUNCTION: Constructor for a corner vertex.
+ * ARGUMENTS: the position of the vertex along the array of vertices, and its position (x, y) in the grid.
+ * RETURN: Returns no values.
+ */
+corner::corner(const unsigned short & pos, const unsigned short & x, const unsigned short & y) : vertex(pos,x,y)
 {}
 
 
-side::side(const unsigned short & p, const unsigned short & x, const unsigned short & y) : vertex(p,x,y)
+/* FUNCTION: Constructor for a side vertex.
+ * ARGUMENTS: the position of the vertex along the array of vertices, and its position (x, y) in the grid.
+ * RETURN: Returns no values.
+ */
+side::side(const unsigned short & pos, const unsigned short & x, const unsigned short & y) : vertex(pos,x,y)
 {}
 
 
-center::center(const unsigned short & p, const unsigned short & x, const unsigned short & y) : vertex(p,x,y)
+/* FUNCTION: Constructor for a center vertex.
+ * ARGUMENTS: the position of the vertex along the array of vertices, and its position (x, y) in the grid.
+ * RETURN: Returns no values.
+ */
+center::center(const unsigned short & pos, const unsigned short & x, const unsigned short & y) : vertex(pos,x,y)
 {}
+
+
 
 void gridgraph::init()
 {
@@ -45,38 +74,48 @@ void gridgraph::init()
 
     vertex ** current = gridArray;
     int count = 0;
-    for(int i = 0; i < row_size; ++i)
-        for(int j = 0; j < column_size; ++j, ++count, ++current)
-            *current = map_to_grid(count, i, j);
+    for(int row_pos = 0; row_pos < row_size; ++row_pos)
+        for(int column_pos = 0; column_pos < column_size; ++column_pos, ++count, ++current)
+            *current = map_to_grid(count, row_pos, column_pos);
 
     current = gridArray;
     while(current < END)
     {
-        (**current).init(column_size, row_size, gridArray);
+        (**current).init(row_size, column_size, gridArray);
         ++current;
     }
 }
 
-vertex * gridgraph::map_to_grid(const int & position, const int & row, const int & column)
+vertex * gridgraph::map_to_grid(const int & position, const int & row_pos, const int & column_pos)
 {
     int adjacencies = 4;
-    if(row == 0 || row == row_size - 1)
+    
+    cout << position << " " << row_pos << " " << row_size << " " << column_pos << " " << column_size << endl;
+    
+    if(row_pos == 0 || row_pos == column_size - 1)
         --adjacencies;
 
-    if(column == 0 || column == column_size - 1)
+    if(column_pos == 0 || column_pos == row_size - 1)
         --adjacencies;
 
     if(adjacencies == 3)
-        return new side(position, row, column);
+        return new side(position, row_pos, column_pos);
 
     if(adjacencies == 4)
-        return new center(position, row, column);
+        return new center(position, row_pos, column_pos);
 
     if(adjacencies == 2)
-        return new corner(position, row, column);
+        return new corner(position, row_pos, column_pos);
 
 
     return NULL;
+}
+
+
+
+int vertex::map_to_array(const unsigned short & x, const unsigned short & y, const unsigned short & row_size)
+{
+    return y + (row_size * x);
 }
 
 
@@ -183,10 +222,6 @@ unsigned short vertex::get_position(void) const
 }
 
 
-int vertex::map_to_array(const unsigned short & x, const unsigned short & y, const unsigned short & row_size)
-{
-    return y + (row_size * x);
-}
 
 unsigned short vertex::get_distance(const unsigned short & x, const unsigned short & y) const
 {
@@ -230,16 +265,13 @@ void gridgraph::display_as_grid(void) const
 {
     cout << endl;
     vertex ** temp = gridArray;
-    unsigned short to_display;
+    //unsigned short to_display;
     for(int i = 0; i < column_size; ++i)
     {
         for(int j = 0; j < row_size; ++j)
         {
-            to_display = (*temp)->get_tile_number();
-            if(to_display)
-                cout << to_display << '\t';
-            else
-                cout << "b\t";
+	
+	    cout << '(' << (*temp)->get_x_pos() << ", " << (*temp)->get_y_pos()	<< ')' << '\t';
             ++temp;
         }
         cout << endl << endl;
@@ -268,17 +300,29 @@ void gridgraph::display_vertices(void) const
 
 void corner::display()
 {
-    cout << "corner\t" << position << " -> " << vertical_adj->get_position()  << " " << horizontal_adj->get_position() << "\ttile number: " << tile_number << endl;
+	cout << position << '\t'
+	     << "corner\t" << '(' << x_pos << ", " << y_pos << ')' << " -> " 
+	     << "((" << vertical_adj->get_x_pos()   << ", " << vertical_adj->get_y_pos()   << ')'  << ", " 
+	     << '('  << horizontal_adj->get_x_pos() << ", " << horizontal_adj->get_y_pos() << "))" << endl;
 }
 
 void side::display()
 {
-    cout << "side\t" << position << " -> " << pi_radian1st->get_position() << " " << pi_radian2nd->get_position() << " " << pi_radian3rd->get_position() << "\ttile number: " << tile_number << endl;
+	cout << position << '\t'
+	     << "side\t" << '(' << x_pos << ", " << y_pos << ')' << " -> " 
+	     << "((" << pi_radian1st->get_x_pos() << ", " << pi_radian1st->get_y_pos() << ')'  << ", " 
+	     << '('  << pi_radian2nd->get_x_pos() << ", " << pi_radian2nd->get_y_pos() << ')'  << ", " 
+	     << '('  << pi_radian3rd->get_x_pos() << ", " << pi_radian3rd->get_y_pos() << "))" << endl;
 }
 
 void center::display()
 {
-    cout << "center\t" << position <<  " -> " << right->get_position() << " " << up->get_position() << " " << left->get_position() << " " << down->get_position()  << "\ttile number: " << tile_number << endl;
+    cout << position << '\t'
+	 << "center\t" << '(' << x_pos << ", " << y_pos << ')' <<  " -> " 
+	 << "((" << right->get_x_pos() << ", " << right->get_y_pos() << ')' << ", " 
+	 << '('  << up->get_x_pos()    << ", " << up->get_y_pos()    << ')' << ", "
+	 << '('  << left->get_x_pos()  << ", " << left->get_y_pos()  << ')' << ", "
+	 << '('  << down->get_x_pos()  << ", " << down->get_y_pos()  << "))" << endl;
 }
 
 
@@ -376,4 +420,8 @@ unsigned short center::expand(unsigned short * original, unsigned short ** to_fi
     return 4;
 }
 
+/* FUNCTION:
+ * ARGUMENTS:
+ * RETURN:
+ */
 

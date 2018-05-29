@@ -3,5 +3,6 @@ clean:
 
 test:
 	g++ *.cpp -g -Wall -o testmain.out
+	./testmain.out
 
 
