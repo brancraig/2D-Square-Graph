@@ -6,8 +6,8 @@ int main()
 	
 	cout << "\nRunning Tests" << endl << endl;
 
-	int rows = 3;
-	int columns = 2;
+	int rows = 10;
+	int columns = 10;
 
 	cout << "Number of rows (column size): " << rows << endl;
 	cout << "Number of columns (row size): " << columns << endl << endl;

@@ -1,5 +1,12 @@
-/* Brandon Craig | bracraig "at" pdx "dot" edu 
- * CS441 | Fall 2017 | Portland State University */
+//gridgraph.cpp
+
+/* Brandon Craig | brandonjcraig00 "at" gmail "dot" com */
+
+/* This is a graph for any N by M (N, M > 1) 2-dimensional square grid. In a square grid there
+ * are corner, side, and center vertices. Here each one is treated as its own type derived from
+ * an abstract base vertex class. This allows for easy tabulation of adjacency pointers across
+ * the grid. In this version, diagonally-adjacent squares are NOT tabulated; only those directly
+ * adjacent are kept. For example: corners have 2 adjacent vertices; sides have 3; centers have 4.*/
 
 
 #include "gridgraph.h"
@@ -12,7 +19,7 @@ gridgraph::gridgraph(int rows_in_grid, int columns_in_grid)
 {
     row_size = columns_in_grid;
     column_size = rows_in_grid;
-    init();
+    graph_init();
 }
 
 
@@ -20,11 +27,11 @@ gridgraph::gridgraph(int rows_in_grid, int columns_in_grid)
  * ARGUMENTS: the number of rows and the number of columns. 
  * RETURN: Returns no values.
  */
-gridgraph::gridgraph(const unsigned short & rows_in_grid, const unsigned short & columns_in_grid)
+gridgraph::gridgraph(const unsigned int & rows_in_grid, const unsigned int & columns_in_grid)
 {
     row_size = columns_in_grid;
     column_size = rows_in_grid;
-    init();
+    graph_init();
 }
 
 
@@ -32,12 +39,12 @@ gridgraph::gridgraph(const unsigned short & rows_in_grid, const unsigned short &
  * ARGUMENTS: the position of the vertex along the array of vertices, and its position (x, y) in the grid.
  * RETURN: Returns no values.
  */
-vertex::vertex(const unsigned short & pos, const unsigned short & x, const unsigned short & y)
+vertex::vertex(const unsigned int & pos, const unsigned int & x, const unsigned int & y)
 {
-    tile_number = 0;
     position = pos;
-    x_pos = x;
-    y_pos = y;
+    row_pos = x;
+    column_pos = y;
+    visited = false;
 }
 
 
@@ -45,7 +52,7 @@ vertex::vertex(const unsigned short & pos, const unsigned short & x, const unsig
  * ARGUMENTS: the position of the vertex along the array of vertices, and its position (x, y) in the grid.
  * RETURN: Returns no values.
  */
-corner::corner(const unsigned short & pos, const unsigned short & x, const unsigned short & y) : vertex(pos,x,y)
+corner::corner(const unsigned int & pos, const unsigned int & x, const unsigned int & y) : vertex(pos,x,y)
 {}
 
 
@@ -53,7 +60,7 @@ corner::corner(const unsigned short & pos, const unsigned short & x, const unsig
  * ARGUMENTS: the position of the vertex along the array of vertices, and its position (x, y) in the grid.
  * RETURN: Returns no values.
  */
-side::side(const unsigned short & pos, const unsigned short & x, const unsigned short & y) : vertex(pos,x,y)
+side::side(const unsigned int & pos, const unsigned int & x, const unsigned int & y) : vertex(pos,x,y)
 {}
 
 
@@ -61,22 +68,29 @@ side::side(const unsigned short & pos, const unsigned short & x, const unsigned 
  * ARGUMENTS: the position of the vertex along the array of vertices, and its position (x, y) in the grid.
  * RETURN: Returns no values.
  */
-center::center(const unsigned short & pos, const unsigned short & x, const unsigned short & y) : vertex(pos,x,y)
+center::center(const unsigned int & pos, const unsigned int & x, const unsigned int & y) : vertex(pos,x,y)
 {}
 
 
 
-void gridgraph::init()
+/* FUNCTION:
+ * ARGUMENTS:
+ * RETURN:
+ */
+void gridgraph::graph_init()
 {
     array_length = row_size * column_size;
     gridArray = new vertex*[array_length];
     END = (gridArray + array_length);
 
     vertex ** current = gridArray;
-    int count = 0;
-    for(int row_pos = 0; row_pos < row_size; ++row_pos)
-        for(int column_pos = 0; column_pos < column_size; ++column_pos, ++count, ++current)
-            *current = map_to_grid(count, row_pos, column_pos);
+    unsigned int array_position = 0;
+    //cout << "row size: " << row_size << " column size: " << column_size << endl;
+    for(unsigned int row = 0; row < column_size; ++row)
+        for(unsigned int column = 0; column < row_size; ++column, ++array_position, ++current){
+	    //cout << '(' << row << ", " << column  << ")\n";
+            *current = determine_vertex_type(array_position, row, column);
+	}
 
     current = gridArray;
     while(current < END)
@@ -86,26 +100,31 @@ void gridgraph::init()
     }
 }
 
-vertex * gridgraph::map_to_grid(const int & position, const int & row_pos, const int & column_pos)
+
+/* FUNCTION:
+ * ARGUMENTS:
+ * RETURN:
+ */
+vertex * gridgraph::determine_vertex_type(const unsigned int & position, const unsigned int & row_position, const unsigned int & column_position)
 {
-    int adjacencies = 4;
+    unsigned int adjacencies = 4;
     
-    cout << position << " " << row_pos << " " << row_size << " " << column_pos << " " << column_size << endl;
+    //cout << position << " " << row_position << " " << row_size << " " << column_position << " " << column_size << endl;
     
-    if(row_pos == 0 || row_pos == column_size - 1)
+    if(row_position == 0 || row_position == column_size - 1)
         --adjacencies;
 
-    if(column_pos == 0 || column_pos == row_size - 1)
+    if(column_position == 0 || column_position == row_size - 1)
         --adjacencies;
 
     if(adjacencies == 3)
-        return new side(position, row_pos, column_pos);
+        return new side(position, row_position, column_position);
 
     if(adjacencies == 4)
-        return new center(position, row_pos, column_pos);
+        return new center(position, row_position, column_position);
 
     if(adjacencies == 2)
-        return new corner(position, row_pos, column_pos);
+        return new corner(position, row_position, column_position);
 
 
     return NULL;
@@ -113,123 +132,148 @@ vertex * gridgraph::map_to_grid(const int & position, const int & row_pos, const
 
 
 
-int vertex::map_to_array(const unsigned short & x, const unsigned short & y, const unsigned short & row_size)
+/* FUNCTION:
+ * ARGUMENTS:
+ * RETURN:
+ */
+void corner::init(const unsigned int & x_size, const unsigned int & y_size, vertex ** grid) 
 {
-    return y + (row_size * x);
-}
-
-
-void corner::init(const unsigned short & x_size, const unsigned short & y_size, vertex ** grid) 
-{
-   if(x_pos == 0){ //top
-        if(y_pos == 0)         //left
+	   	
+   if(row_pos == 0){ //top
+        if(column_pos == 0)         //left
         {
-            vertical_adj = *(grid + map_to_array(x_pos + 1, y_pos, y_size));
-            horizontal_adj = *(grid + map_to_array(x_pos, y_pos + 1, y_size));
+            vertical_adj = *(grid + position + x_size);
+            horizontal_adj = *(grid + position + 1);
         } else {               //right
-            vertical_adj = *(grid + map_to_array(x_pos + 1, y_pos, y_size));
-            horizontal_adj = *(grid + map_to_array(x_pos, y_pos - 1, y_size));
+            vertical_adj = *(grid + position + x_size);
+            horizontal_adj = *(grid + position - 1);
         }
    }else{       //bottom
-       if(y_pos == 0)           //left
+       if(column_pos == 0)           //left
        {                   
-           vertical_adj = *(grid + map_to_array(x_pos - 1, y_pos, y_size));
-           horizontal_adj = *(grid + map_to_array(x_pos, y_pos + 1, y_size));
+           vertical_adj = *(grid + position - x_size);
+           horizontal_adj = *(grid + position + 1);
        }else{                 //right
-           vertical_adj = *(grid + map_to_array(x_pos - 1, y_pos, y_size));
-           horizontal_adj = *(grid + map_to_array(x_pos, y_pos - 1, y_size));
+           vertical_adj = *(grid + position - x_size);
+           horizontal_adj = *(grid + position - 1);
        }
    }
-   gridArray = grid;
-   END = (gridArray + x_size * y_size);
-
 }
 
-
-void side::init(const unsigned short & x_size, const unsigned short & y_size, vertex ** grid) 
+/* FUNCTION:
+ * ARGUMENTS:
+ * RETURN:
+ */
+void side::init(const unsigned int & x_size, const unsigned int & y_size, vertex ** grid) 
 {
 
-    if(x_pos == 0) //top side
+    if(row_pos == 0) //top side
     {
-        pi_radian1st = *(grid + map_to_array(x_pos, y_pos + 1, y_size)); //top next right
-        pi_radian2nd = *(grid + map_to_array(x_pos, y_pos - 1, y_size)); //top next left
-        pi_radian3rd = *(grid + map_to_array(x_pos + 1, y_pos, y_size)); //below this side
+        pi_radian1st = *(grid + position + 1); //top next right
+        pi_radian2nd = *(grid + position - 1); //top next left
+        pi_radian3rd = *(grid + position + x_size); //below this side
     }
-    else if(y_pos == 0) //left side
+    else if(column_pos == 0) //left side
     {
-        pi_radian1st = *(grid + map_to_array(x_pos, y_pos + 1, y_size)); //side next right
-        pi_radian2nd = *(grid + map_to_array(x_pos - 1, y_pos, y_size)); //above this side
-        pi_radian3rd = *(grid + map_to_array(x_pos + 1, y_pos, y_size)); //below this side
+        pi_radian1st = *(grid + position + 1); //side next right
+        pi_radian2nd = *(grid + position - x_size); //above this side
+        pi_radian3rd = *(grid + position + x_size); //below this side
 
     }
-    else if(x_pos == x_size - 1) // bottom side
+    else if(row_pos == y_size - 1) // bottom side
     {
-        pi_radian1st = *(grid + map_to_array(x_pos, y_pos + 1, y_size)); //bottom next right
-        pi_radian2nd = *(grid + map_to_array(x_pos - 1, y_pos, y_size)); //above this side
-        pi_radian3rd = *(grid + map_to_array(x_pos, y_pos - 1, y_size)); //bottom next left
+        pi_radian1st = *(grid + position + 1); //bottom next right
+        pi_radian2nd = *(grid + position - x_size); //above this side
+        pi_radian3rd = *(grid + position - 1); //bottom next left
     }
-    else if(y_pos == y_size - 1) // right side; 
+    else if(column_pos == x_size - 1) // right side; 
     {
-        pi_radian1st = *(grid + map_to_array(x_pos - 1, y_pos, y_size)); //above this side
-        pi_radian2nd = *(grid + map_to_array(x_pos, y_pos - 1, y_size)); //left of this side
-        pi_radian3rd = *(grid + map_to_array(x_pos + 1, y_pos, y_size)); //below this side
+        pi_radian1st = *(grid + position - x_size); //above this side
+        pi_radian2nd = *(grid + position - 1); //left of this side
+        pi_radian3rd = *(grid + position + x_size); //below this side
     }
     else{}
-    gridArray = grid;
-    END = (gridArray + x_size * y_size);
 }
 
-void center::init(const unsigned short & x_size, const unsigned short & y_size, vertex ** grid) 
+
+
+
+
+
+/* FUNCTION:
+ * ARGUMENTS:
+ * RETURN:
+ */
+void center::init(const unsigned int & x_size, const unsigned int & y_size, vertex ** grid) 
 {
-    right = *(grid + map_to_array(x_pos, y_pos + 1, y_size));
-    up = *(grid + map_to_array(x_pos - 1, y_pos, y_size));
-    left = *(grid + map_to_array(x_pos, y_pos - 1, y_size));
-    down = *(grid + map_to_array(x_pos + 1, y_pos, y_size));
-    gridArray = grid;
-    END = (gridArray + x_size * y_size);
-
+    right = *(grid + position + 1);
+    up = *(grid + position - x_size);
+    left = *(grid + position - 1);
+    down = *(grid + position + x_size);
 }
 
 
-void vertex::set_tile_number(const unsigned short & to_set)
+
+
+/* FUNCTION:
+ * ARGUMENTS:
+ * RETURN:
+ */
+void vertex::set_value(char value)
 {
-    tile_number = to_set;
-    return;
+	character = value;
+	return;
 }
 
 
-unsigned short vertex::get_tile_number(void) const
+/* FUNCTION:
+ * ARGUMENTS:
+ * RETURN:
+ */
+char vertex::get_value(void)
 {
-    return tile_number;
+	return character;
 }
 
 
-unsigned short vertex::get_x_pos(void) const
+
+/* FUNCTION:
+ * ARGUMENTS:
+ * RETURN:
+ */
+unsigned int vertex::get_row_pos(void) const
 {
-    return x_pos;
+    return row_pos;
 }
-        
-unsigned short vertex::get_y_pos(void) const
+
+
+
+
+
+/* FUNCTION:
+ * ARGUMENTS:
+ * RETURN:
+ */
+unsigned int vertex::get_column_pos(void) const
 {
-    return y_pos;
+    return column_pos;
 }
 
 
-
-unsigned short vertex::get_position(void) const
+/* FUNCTION:
+ * ARGUMENTS:
+ * RETURN:
+ */
+unsigned int vertex::get_position(void) const
 {
     return position;
 }
 
 
-
-unsigned short vertex::get_distance(const unsigned short & x, const unsigned short & y) const
-{
-  return abs(x - x_pos) + abs(y - y_pos);
-}
-
-
-
+/* FUNCTION:
+ * ARGUMENTS:
+ * RETURN:
+ */
 gridgraph::~gridgraph()
 {
     vertex ** temp = gridArray;
@@ -249,29 +293,54 @@ gridgraph::~gridgraph()
     return;
 }
 
+/* FUNCTION:
+ * ARGUMENTS:
+ * RETURN:
+ */
 corner::~corner()
 {}
 
+
+/* FUNCTION:
+ * ARGUMENTS:
+ * RETURN:
+ */
 side::~side()
 {}
 
+
+/* FUNCTION:
+ * ARGUMENTS:
+ * RETURN:
+ */
 center::~center()
 {}
 
+/* FUNCTION:
+ * ARGUMENTS:
+ * RETURN:
+ */
 vertex::~vertex()
 {}
 
+
+
+
+
+/* FUNCTION:
+ * ARGUMENTS:
+ * RETURN:
+ */
 void gridgraph::display_as_grid(void) const
 {
     cout << endl;
     vertex ** temp = gridArray;
-    //unsigned short to_display;
-    for(int i = 0; i < column_size; ++i)
+    for(unsigned int i = 0; i < column_size; ++i)
     {
-        for(int j = 0; j < row_size; ++j)
+        for(unsigned int j = 0; j < row_size; ++j)
         {
 	
-	    cout << '(' << (*temp)->get_x_pos() << ", " << (*temp)->get_y_pos()	<< ')' << '\t';
+	    cout << '(' << (*temp)->get_row_pos() << ", " << (*temp)->get_column_pos()	<< ')' << '\t';
             ++temp;
         }
         cout << endl << endl;
@@ -283,13 +352,16 @@ void gridgraph::display_as_grid(void) const
 
 
 
-
+/* FUNCTION:
+ * ARGUMENTS:
+ * RETURN:
+ */
 void gridgraph::display_vertices(void) const
 {
     vertex ** start = gridArray;
     while(start < END)
     {
-        for(int i = 0; i < row_size; ++i, ++start){
+        for(unsigned int i = 0; i < row_size; ++i, ++start){
             (*start)->display();
             cout << endl;
         }
@@ -298,127 +370,82 @@ void gridgraph::display_vertices(void) const
 }
 
 
+
+
+/* FUNCTION:
+ * ARGUMENTS:
+ * RETURN:
+ */
 void corner::display()
 {
 	cout << position << '\t'
-	     << "corner\t" << '(' << x_pos << ", " << y_pos << ')' << " -> " 
-	     << "((" << vertical_adj->get_x_pos()   << ", " << vertical_adj->get_y_pos()   << ')'  << ", " 
-	     << '('  << horizontal_adj->get_x_pos() << ", " << horizontal_adj->get_y_pos() << "))" << endl;
+	     << "corner\t" << '(' << row_pos << ", " << column_pos << ')' << " -> " 
+	     << "((" << vertical_adj->get_row_pos()   << ", " << vertical_adj->get_column_pos()   << ')'  << ", " 
+	     << '('  << horizontal_adj->get_row_pos() << ", " << horizontal_adj->get_column_pos() << "))" << endl;
 }
 
+
+
+
+
+/* FUNCTION:
+ * ARGUMENTS:
+ * RETURN:
+ */
 void side::display()
 {
 	cout << position << '\t'
-	     << "side\t" << '(' << x_pos << ", " << y_pos << ')' << " -> " 
-	     << "((" << pi_radian1st->get_x_pos() << ", " << pi_radian1st->get_y_pos() << ')'  << ", " 
-	     << '('  << pi_radian2nd->get_x_pos() << ", " << pi_radian2nd->get_y_pos() << ')'  << ", " 
-	     << '('  << pi_radian3rd->get_x_pos() << ", " << pi_radian3rd->get_y_pos() << "))" << endl;
+	     << "side\t" << '(' << row_pos << ", " << column_pos << ')' << " -> " 
+	     << "((" << pi_radian1st->get_row_pos() << ", " << pi_radian1st->get_column_pos() << ')'  << ", " 
+	     << '('  << pi_radian2nd->get_row_pos() << ", " << pi_radian2nd->get_column_pos() << ')'  << ", " 
+	     << '('  << pi_radian3rd->get_row_pos() << ", " << pi_radian3rd->get_column_pos() << "))" << endl;
 }
 
+/* FUNCTION:
+ * ARGUMENTS:
+ * RETURN:
+ */
 void center::display()
 {
     cout << position << '\t'
-	 << "center\t" << '(' << x_pos << ", " << y_pos << ')' <<  " -> " 
-	 << "((" << right->get_x_pos() << ", " << right->get_y_pos() << ')' << ", " 
-	 << '('  << up->get_x_pos()    << ", " << up->get_y_pos()    << ')' << ", "
-	 << '('  << left->get_x_pos()  << ", " << left->get_y_pos()  << ')' << ", "
-	 << '('  << down->get_x_pos()  << ", " << down->get_y_pos()  << "))" << endl;
+	 << "center\t" << '(' << row_pos << ", " << column_pos << ')' <<  " -> " 
+	 << "((" << right->get_row_pos() << ", " << right->get_column_pos() << ')' << ", " 
+	 << '('  << up->get_row_pos()    << ", " << up->get_column_pos()    << ')' << ", "
+	 << '('  << left->get_row_pos()  << ", " << left->get_column_pos()  << ')' << ", "
+	 << '('  << down->get_row_pos()  << ", " << down->get_column_pos()  << "))" << endl;
 }
 
 
 
-
-unsigned short corner::expand(unsigned short * original, unsigned short ** to_fill, const unsigned short & size)
-{
-    unsigned short * temp1 = *to_fill = new unsigned short[size];
-    unsigned short * temp2 = *(to_fill + 1) = new unsigned short[size];
-    vertex ** start = gridArray;
-    while(start < END)
-    {
-        *temp1 = *temp2 = (*start)->get_tile_number();
-        ++temp1;
-        ++temp2;
-        ++start;
-    }
-    unsigned short vert_position = vertical_adj->get_position();
-    (*to_fill)[vert_position] = 0;
-    (*to_fill)[position] = vertical_adj->get_tile_number();
-
-    unsigned short hori_position = horizontal_adj->get_position();
-    (*(to_fill + 1))[hori_position] = 0;
-    (*(to_fill + 1))[position] = horizontal_adj->get_tile_number();
+/* FUNCTION:
+ * ARGUMENTS:
+ * RETURN:
+ */
+void vertex::expand(){}
 
 
-    
-    return 2;
-}
+/* FUNCTION:
+ * ARGUMENTS:
+ * RETURN:
+ */
+void corner::expand(){}
 
 
-unsigned short side::expand(unsigned short * original, unsigned short ** to_fill, const unsigned short & size)
-{
-    unsigned short * temp0 = *to_fill = new unsigned short[size];
-    unsigned short * temp1 = *(to_fill + 1) = new unsigned short[size];
-    unsigned short * temp2 = *(to_fill + 2) = new unsigned short[size];
+/* FUNCTION:
+ * ARGUMENTS:
+ * RETURN:
+ */
+void side::expand(){}
 
-    vertex ** start = gridArray;
-    while(start < END)
-    {
-        *temp0 = *temp1 = *temp2 = (*start)->get_tile_number();
-        ++temp0;
-        ++temp1;
-        ++temp2;
-        ++start;
-    }
-    unsigned short first_pos = pi_radian1st->get_position();
-    (*to_fill)[first_pos] = 0;
-    (*to_fill)[position] = pi_radian1st->get_tile_number();
 
-    unsigned short second_pos = pi_radian2nd->get_position();
-    (*(to_fill + 1))[second_pos] = 0;
-    (*(to_fill + 1))[position] = pi_radian2nd->get_tile_number();
+/* FUNCTION:
+ * ARGUMENTS:
+ * RETURN:
+ */
+void center::expand(){}
 
-    unsigned short third_pos = pi_radian3rd->get_position();
-    (*(to_fill + 2))[third_pos] = 0;
-    (*(to_fill + 2))[position] = pi_radian3rd->get_tile_number();
 
-    return 3;
-}
 
-unsigned short center::expand(unsigned short * original, unsigned short ** to_fill, const unsigned short & size)
-{
-    unsigned short * temp0 = *to_fill = new unsigned short[size];
-    unsigned short * temp1 = *(to_fill + 1) = new unsigned short[size];
-    unsigned short * temp2 = *(to_fill + 2) = new unsigned short[size];
-    unsigned short * temp3 = *(to_fill + 3) = new unsigned short[size];
-
-    vertex ** start = gridArray;
-    while(start < END)
-    {
-        *temp0 = *temp1 = *temp2 = *temp3 = (*start)->get_tile_number();
-        ++temp0;
-        ++temp1;
-        ++temp2;
-        ++temp3;
-        ++start;
-    }
-    unsigned short first_pos = right->get_position();
-    (*to_fill)[first_pos] = 0;
-    (*to_fill)[position] = right->get_tile_number();
-
-    unsigned short second_pos = up->get_position();
-    (*(to_fill + 1))[second_pos] = 0;
-    (*(to_fill + 1))[position] = up->get_tile_number();
-
-    unsigned short third_pos = left->get_position();
-    (*(to_fill + 2))[third_pos] = 0;
-    (*(to_fill + 2))[position] = left->get_tile_number();
-
-    unsigned short fourth_pos = down->get_position();
-    (*(to_fill + 3))[fourth_pos] = 0;
-    (*(to_fill + 3))[position] = down->get_tile_number();
-
-    return 4;
-}
 
 /* FUNCTION:
  * ARGUMENTS:
