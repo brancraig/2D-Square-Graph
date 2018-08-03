@@ -23,10 +23,10 @@ class vertex
 {
     public:
         vertex(void);
-        vertex(const unsigned int & position, const unsigned int & row_position, const unsigned int & column_position);
+        vertex(const unsigned int & array_position, const unsigned int & row_position, const unsigned int & column_position);
         virtual ~vertex(void);
         virtual void display(void) = 0;
-        virtual void init(const unsigned int & row_size, const unsigned int & column_size, vertex ** grid) = 0;
+        virtual void create_adjacencies(const unsigned int & row_size, const unsigned int & column_size, vertex ** grid) = 0;
 	
 	virtual void expand() = 0;
 	//void set_visited(bool);
@@ -53,10 +53,10 @@ class vertex
 class corner : public vertex
 {
     public:
-        corner(const unsigned int & position, const unsigned int & row_pos, const unsigned int & column_pos);
+        corner(const unsigned int & array_position, const unsigned int & row_position, const unsigned int & column_position);
         ~corner();
         void display();
-        void init(const unsigned int & x_size, const unsigned int & y_size, vertex ** grid);
+        void create_adjacencies(const unsigned int & row_size, const unsigned int & column_size, vertex ** grid);
 
 	void expand();
 
@@ -68,10 +68,10 @@ class corner : public vertex
 class side : public vertex
 {
     public:
-        side(const unsigned int & position, const unsigned int & x, const unsigned int & y);
+        side(const unsigned int & array_position, const unsigned int & row_position, const unsigned int & column_position);
         ~side();
         void display();
-        void init(const unsigned int & x_size, const unsigned int & y_size, vertex ** grid);
+        void create_adjacencies(const unsigned int & row_size, const unsigned int & column_size, vertex ** grid);
 
 	void expand();
 
@@ -85,10 +85,10 @@ class side : public vertex
 class center : public vertex
 {
     public:
-        center(const unsigned int & position, const unsigned int & x, const unsigned int & y);
+        center(const unsigned int & array_position, const unsigned int & row_position, const unsigned int & column_position);
         ~center();
         void display();
-        void init(const unsigned int & x_size, const unsigned int & y_size, vertex ** grid);
+        void create_adjacencies(const unsigned int & row_size, const unsigned int & column_size, vertex ** grid);
 
 	void expand();
 
@@ -112,7 +112,6 @@ class gridgraph
         void display_vertices(void) const;
         void display_as_grid(void) const;
        
-
 
     protected:
         vertex ** gridArray;

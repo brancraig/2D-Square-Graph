@@ -52,7 +52,7 @@ vertex::vertex(const unsigned int & pos, const unsigned int & x, const unsigned 
  * ARGUMENTS: the position of the vertex along the array of vertices, and its position (x, y) in the grid.
  * RETURN: Returns no values.
  */
-corner::corner(const unsigned int & pos, const unsigned int & x, const unsigned int & y) : vertex(pos,x,y)
+corner::corner(const unsigned int & array_position, const unsigned int & row_position, const unsigned int & column_position) : vertex(array_position, row_position, column_position)
 {}
 
 
@@ -60,7 +60,7 @@ corner::corner(const unsigned int & pos, const unsigned int & x, const unsigned 
  * ARGUMENTS: the position of the vertex along the array of vertices, and its position (x, y) in the grid.
  * RETURN: Returns no values.
  */
-side::side(const unsigned int & pos, const unsigned int & x, const unsigned int & y) : vertex(pos,x,y)
+side::side(const unsigned int & array_position, const unsigned int & row_position, const unsigned int & column_position) : vertex(array_position, row_position, column_position)
 {}
 
 
@@ -68,14 +68,14 @@ side::side(const unsigned int & pos, const unsigned int & x, const unsigned int 
  * ARGUMENTS: the position of the vertex along the array of vertices, and its position (x, y) in the grid.
  * RETURN: Returns no values.
  */
-center::center(const unsigned int & pos, const unsigned int & x, const unsigned int & y) : vertex(pos,x,y)
+center::center(const unsigned int & array_position, const unsigned int & row_position, const unsigned int & column_position) : vertex(array_position, row_position, column_position)
 {}
 
 
 
-/* FUNCTION:
- * ARGUMENTS:
- * RETURN:
+/* FUNCTION: Function initializes the graph by iterating through the vertices and deducing each vertex's type.
+ * ARGUMENTS: None. Class members that are stored in the constructor act as parameters to this function. 
+ * RETURN: Returns no values. 
  */
 void gridgraph::graph_init()
 {
@@ -85,7 +85,6 @@ void gridgraph::graph_init()
 
     vertex ** current = gridArray;
     unsigned int array_position = 0;
-    //cout << "row size: " << row_size << " column size: " << column_size << endl;
     for(unsigned int row = 0; row < column_size; ++row)
         for(unsigned int column = 0; column < row_size; ++column, ++array_position, ++current){
 	    //cout << '(' << row << ", " << column  << ")\n";
@@ -95,15 +94,15 @@ void gridgraph::graph_init()
     current = gridArray;
     while(current < END)
     {
-        (**current).init(row_size, column_size, gridArray);
+        (**current).create_adjacencies(row_size, column_size, gridArray);
         ++current;
     }
 }
 
 
-/* FUNCTION:
- * ARGUMENTS:
- * RETURN:
+/* FUNCTION: Helps the "graph_init" function by doing the vertex type determination part of setting up the grid. 
+ * ARGUMENTS: Take the "position" of the vertex in the array, and its position in its row and column. 
+ * RETURN: Returns the pointer to the new vertex.
  */
 vertex * gridgraph::determine_vertex_type(const unsigned int & position, const unsigned int & row_position, const unsigned int & column_position)
 {
@@ -132,92 +131,89 @@ vertex * gridgraph::determine_vertex_type(const unsigned int & position, const u
 
 
 
-/* FUNCTION:
- * ARGUMENTS:
- * RETURN:
+/* FUNCTION: Tabulates the adjacencies for the corner vertex type and stores them in that vertex.
+ * ARGUMENTS: The size of the rows in the grid and the starting address of the vertex array from the gridgraph.
+ * RETURN: Returns no values.
  */
-void corner::init(const unsigned int & x_size, const unsigned int & y_size, vertex ** grid) 
+void corner::create_adjacencies(const unsigned int & row_size, const unsigned int & column_size, vertex ** grid) 
 {
 	   	
    if(row_pos == 0){ //top
         if(column_pos == 0)         //left
         {
-            vertical_adj = *(grid + position + x_size);
+            vertical_adj = *(grid + position + row_size);
             horizontal_adj = *(grid + position + 1);
         } else {               //right
-            vertical_adj = *(grid + position + x_size);
+            vertical_adj = *(grid + position + row_size);
             horizontal_adj = *(grid + position - 1);
         }
    }else{       //bottom
        if(column_pos == 0)           //left
        {                   
-           vertical_adj = *(grid + position - x_size);
+           vertical_adj = *(grid + position - row_size);
            horizontal_adj = *(grid + position + 1);
        }else{                 //right
-           vertical_adj = *(grid + position - x_size);
+           vertical_adj = *(grid + position - row_size);
            horizontal_adj = *(grid + position - 1);
        }
    }
 }
 
-/* FUNCTION:
- * ARGUMENTS:
- * RETURN:
+/* FUNCTION: Tabulates the adjacencies for the side vertex type and stores them in that vertex.
+ * ARGUMENTS: The size of the rows in the grid and the starting address of the vertex array from the gridgraph.
+ * RETURN: Returns no values.
  */
-void side::init(const unsigned int & x_size, const unsigned int & y_size, vertex ** grid) 
+void side::create_adjacencies(const unsigned int & row_size, const unsigned int & column_size, vertex ** grid) 
 {
 
     if(row_pos == 0) //top side
     {
         pi_radian1st = *(grid + position + 1); //top next right
         pi_radian2nd = *(grid + position - 1); //top next left
-        pi_radian3rd = *(grid + position + x_size); //below this side
+        pi_radian3rd = *(grid + position + row_size); //below this side
     }
     else if(column_pos == 0) //left side
     {
         pi_radian1st = *(grid + position + 1); //side next right
-        pi_radian2nd = *(grid + position - x_size); //above this side
-        pi_radian3rd = *(grid + position + x_size); //below this side
+        pi_radian2nd = *(grid + position - row_size); //above this side
+        pi_radian3rd = *(grid + position + row_size); //below this side
 
     }
-    else if(row_pos == y_size - 1) // bottom side
+    else if(row_pos == column_size - 1) // bottom side
     {
         pi_radian1st = *(grid + position + 1); //bottom next right
-        pi_radian2nd = *(grid + position - x_size); //above this side
+        pi_radian2nd = *(grid + position - row_size); //above this side
         pi_radian3rd = *(grid + position - 1); //bottom next left
     }
-    else if(column_pos == x_size - 1) // right side; 
+    else if(column_pos == row_size - 1) // right side; 
     {
-        pi_radian1st = *(grid + position - x_size); //above this side
+        pi_radian1st = *(grid + position - row_size); //above this side
         pi_radian2nd = *(grid + position - 1); //left of this side
-        pi_radian3rd = *(grid + position + x_size); //below this side
+        pi_radian3rd = *(grid + position + row_size); //below this side
     }
     else{}
 }
 
 
 
-
-
-
-/* FUNCTION:
- * ARGUMENTS:
- * RETURN:
+/* FUNCTION: Tabulates the adjacencies for the center vertex type and stores them in that vertex.
+ * ARGUMENTS: The size of the rows in the grid and the starting address of the vertex array from the gridgraph.
+ * RETURN: Returns no values.
  */
-void center::init(const unsigned int & x_size, const unsigned int & y_size, vertex ** grid) 
+void center::create_adjacencies(const unsigned int & row_size, const unsigned int & column_size, vertex ** grid) 
 {
     right = *(grid + position + 1);
-    up = *(grid + position - x_size);
+    up = *(grid + position - row_size);
     left = *(grid + position - 1);
-    down = *(grid + position + x_size);
+    down = *(grid + position + row_size);
 }
 
 
 
 
-/* FUNCTION:
- * ARGUMENTS:
- * RETURN:
+/* FUNCTION: A setter for the "value" contained within a particular vertex.
+ * ARGUMENTS: The value to be set.
+ * RETURN: Returns void.
  */
 void vertex::set_value(char value)
 {
@@ -226,9 +222,9 @@ void vertex::set_value(char value)
 }
 
 
-/* FUNCTION:
- * ARGUMENTS:
- * RETURN:
+/* FUNCTION: A getter for whatever "value" is contained within a particular vertex. 
+ * ARGUMENTS: No params.
+ * RETURN: Returns the value of the thing stored within the vertex. 
  */
 char vertex::get_value(void)
 {
@@ -237,9 +233,9 @@ char vertex::get_value(void)
 
 
 
-/* FUNCTION:
- * ARGUMENTS:
- * RETURN:
+/* FUNCTION: A getter that returns the row position of a given vertex.
+ * ARGUMENTS: No params. 
+ * RETURN: The row position data member. 
  */
 unsigned int vertex::get_row_pos(void) const
 {
@@ -247,12 +243,9 @@ unsigned int vertex::get_row_pos(void) const
 }
 
 
-
-
-
-/* FUNCTION:
- * ARGUMENTS:
- * RETURN:
+/* FUNCTION: A getter that returns the columnal position of a given vertex. 
+ * ARGUMENTS: No params. 
+ * RETURN: The colomn position data member. 
  */
 unsigned int vertex::get_column_pos(void) const
 {
@@ -260,9 +253,9 @@ unsigned int vertex::get_column_pos(void) const
 }
 
 
-/* FUNCTION:
- * ARGUMENTS:
- * RETURN:
+/* FUNCTION: A getter that returns the position of the vertex in the array of vertices. 
+ * ARGUMENTS: No params.
+ * RETURN: The position data member. 
  */
 unsigned int vertex::get_position(void) const
 {
@@ -270,9 +263,9 @@ unsigned int vertex::get_position(void) const
 }
 
 
-/* FUNCTION:
- * ARGUMENTS:
- * RETURN:
+/* FUNCTION: Destructor for the gridgraph class. Deletes all dynamically allocated memory.
+ * ARGUMENTS: No params.
+ * RETURN: Returns no values. 
  */
 gridgraph::~gridgraph()
 {
@@ -293,32 +286,33 @@ gridgraph::~gridgraph()
     return;
 }
 
-/* FUNCTION:
- * ARGUMENTS:
- * RETURN:
+/* FUNCTION: Destructor for the corner class. No dynamic memory.
+ * ARGUMENTS: No params.
+ * RETURN: Returns no values. 
  */
 corner::~corner()
 {}
 
 
-/* FUNCTION:
- * ARGUMENTS:
- * RETURN:
+/* FUNCTION: Destructor for the side class. No dynamic memory.
+ * ARGUMENTS: No params.
+ * RETURN: Returns no values. 
  */
 side::~side()
 {}
 
 
-/* FUNCTION:
- * ARGUMENTS:
- * RETURN:
+/* FUNCTION: Destructor for the center class. No dynamic memory.
+ * ARGUMENTS: No params.
+ * RETURN: Returns no values. 
  */
 center::~center()
 {}
 
-/* FUNCTION:
- * ARGUMENTS:
- * RETURN:
+
+/* FUNCTION: Destructor for the vertex abstract class. No dynamic memory.
+ * ARGUMENTS: No params.
+ * RETURN: Returns no values. 
  */
 vertex::~vertex()
 {}
@@ -327,9 +321,9 @@ vertex::~vertex()
 
 
 
-/* FUNCTION:
- * ARGUMENTS:
- * RETURN:
+/* FUNCTION: Function to display the entire graph as a simple grid.
+ * ARGUMENTS: No params.
+ * RETURN: Returns no values.  
  */
 void gridgraph::display_as_grid(void) const
 {
@@ -352,9 +346,9 @@ void gridgraph::display_as_grid(void) const
 
 
 
-/* FUNCTION:
- * ARGUMENTS:
- * RETURN:
+/* FUNCTION: Displays the grid in graph-notation form.
+ * ARGUMENTS: No params.
+ * RETURN: Returns no values.
  */
 void gridgraph::display_vertices(void) const
 {
@@ -372,9 +366,9 @@ void gridgraph::display_vertices(void) const
 
 
 
-/* FUNCTION:
- * ARGUMENTS:
- * RETURN:
+/* FUNCTION: Displays the array, row, and column position, adjacencies, and type, of a corner.
+ * ARGUMENTS: No params.
+ * RETURN: Returns no values.
  */
 void corner::display()
 {
@@ -385,12 +379,9 @@ void corner::display()
 }
 
 
-
-
-
-/* FUNCTION:
- * ARGUMENTS:
- * RETURN:
+/* FUNCTION: Displays the array, row, and column position, adjacencies, and type, of a side.
+ * ARGUMENTS: No params.
+ * RETURN: Returns no values.
  */
 void side::display()
 {
@@ -401,9 +392,9 @@ void side::display()
 	     << '('  << pi_radian3rd->get_row_pos() << ", " << pi_radian3rd->get_column_pos() << "))" << endl;
 }
 
-/* FUNCTION:
- * ARGUMENTS:
- * RETURN:
+/* FUNCTION: Displays the array, row, and column position, adjacencies, and type, of a center.
+ * ARGUMENTS: No params.
+ * RETURN: Returns no values.
  */
 void center::display()
 {
@@ -417,30 +408,30 @@ void center::display()
 
 
 
-/* FUNCTION:
- * ARGUMENTS:
- * RETURN:
+/* FUNCTION: An empty function "to be determined" by whatever algorithm is being implemented.
+ * ARGUMENTS: Dependent on usage.
+ * RETURN: Returns no values. 
  */
 void vertex::expand(){}
 
 
-/* FUNCTION:
- * ARGUMENTS:
- * RETURN:
+/* FUNCTION: An empty function "to be determined" by whatever algorithm is being implemented.
+ * ARGUMENTS: Dependent on usage.
+ * RETURN: Returns no values. 
  */
 void corner::expand(){}
 
 
-/* FUNCTION:
- * ARGUMENTS:
- * RETURN:
+/* FUNCTION: An empty function "to be determined" by whatever algorithm is being implemented.
+ * ARGUMENTS: Dependent on usage.
+ * RETURN: Returns no values. 
  */
 void side::expand(){}
 
 
-/* FUNCTION:
- * ARGUMENTS:
- * RETURN:
+/* FUNCTION: An empty function "to be determined" by whatever algorithm is being implemented.
+ * ARGUMENTS: Dependent on usage.
+ * RETURN: Returns no values. 
  */
 void center::expand(){}
 
