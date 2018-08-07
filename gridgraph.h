@@ -29,10 +29,12 @@ class vertex
         virtual void create_adjacencies(const unsigned int & row_size, const unsigned int & column_size, vertex ** grid) = 0;
 	
 	virtual void expand() = 0;
-	//void set_visited(bool);
+	
+	void set_visited(bool);
+	bool get_visited(void) const;
 
         void set_value(char value);
-        char get_value(void);
+        char get_value(void) const;
 
         unsigned int get_position(void) const;
         unsigned int get_row_pos(void) const;

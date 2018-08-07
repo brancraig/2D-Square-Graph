@@ -226,7 +226,7 @@ void vertex::set_value(char value)
  * ARGUMENTS: No params.
  * RETURN: Returns the value of the thing stored within the vertex. 
  */
-char vertex::get_value(void)
+char vertex::get_value(void) const
 {
 	return character;
 }
@@ -419,21 +419,34 @@ void vertex::expand(){}
  * ARGUMENTS: Dependent on usage.
  * RETURN: Returns no values. 
  */
-void corner::expand(){}
+void corner::expand(){
+	horizontal_adj->expand();
+	vertical_adj->expand();
+}
 
 
 /* FUNCTION: An empty function "to be determined" by whatever algorithm is being implemented.
  * ARGUMENTS: Dependent on usage.
  * RETURN: Returns no values. 
  */
-void side::expand(){}
+void side::expand(){
+	pi_radian1st->expand();
+	pi_radian2nd->expand();
+	pi_radian3rd->expand();
+}
 
 
 /* FUNCTION: An empty function "to be determined" by whatever algorithm is being implemented.
  * ARGUMENTS: Dependent on usage.
  * RETURN: Returns no values. 
  */
-void center::expand(){}
+void center::expand()
+{
+	right->expand();
+	up->expand();
+	left->expand();
+	down->expand();
+}
 
 
 

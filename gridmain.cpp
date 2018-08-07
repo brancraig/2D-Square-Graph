@@ -4,7 +4,6 @@
 int main()
 {
 	
-	cout << "\nRunning Tests" << endl << endl;
 
 	int rows = 10;
 	int columns = 10;
