@@ -10,6 +10,9 @@ MEMTEST=valgrind --leak-check=full
 
 all: gridgraph
 
+allrun: gridgraph 
+	./$(OUTPUTFILE)
+
 debug:  gridgraph.o gridmain.o
 	$(CC) $(DEBUGFLAGS) gridgraph.o gridmain.o -o $(TESTOUTPUT)
 	$(RUNGDB) $(TESTOUTPUT)	

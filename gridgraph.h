@@ -113,6 +113,9 @@ class gridgraph
 
         void display_vertices(void) const;
         void display_as_grid(void) const;
+
+	bool get_coordinate_by_position(unsigned int position, unsigned int & row, unsigned int & column) const;
+	char get_value_at_cord(unsigned int row, unsigned int column) const; 
        
 
     protected:

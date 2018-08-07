@@ -455,4 +455,27 @@ void center::expand()
  * ARGUMENTS:
  * RETURN:
  */
+bool gridgraph::get_coordinate_by_position(unsigned int position, unsigned int & row, unsigned int & column) const
+{
+	vertex ** target = (gridArray + position);
+	if(position < 0 || target > END)
+		return false;
+
+	row = (*(target))->get_row_pos();
+	column = (*(target))->get_column_pos();
+	return true;
+}
+
+
+/* FUNCTION:
+ * ARGUMENTS:
+ * RETURN:
+ */
+
+char gridgraph::get_value_at_cord(unsigned int row, unsigned int column) const 
+{
+	if(row < 0 || column < 0 || (gridArray + row * column) > END)
+		return '\0';
+	return (*(gridArray + row * column))->get_value();  
+}	
 
