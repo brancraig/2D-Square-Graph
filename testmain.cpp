@@ -9,16 +9,16 @@
 
 void ASSERT(string test_name, bool test_function) {cout << test_name << ": "; test_function ? cout << "PASSED\n" : cout << "FAILED\n";}
 
-bool test_coordinate_bounds(const gridgraph & grid);
-bool test_vertex_coord_by_position(const gridgraph & grid);
-bool test_vertex_position_by_coord(const gridgraph & grid);
+bool test_coordinate_bounds(const gridgraph<char> & grid);
+bool test_vertex_coord_by_position(const gridgraph<char> & grid);
+bool test_vertex_position_by_coord(const gridgraph<char> & grid);
 
 
 
 int main()
 {
 
-	gridgraph grid(5,5);
+	gridgraph<char> grid(5,5);
 	ASSERT("Coordinates do not exceed bounds", test_coordinate_bounds(grid));
 	ASSERT("Each position matches its correct set of coordinates", test_vertex_position_by_coord(grid));
 	ASSERT("Each set of coordinates matches its correct position", test_vertex_coord_by_position(grid)); 	
@@ -28,7 +28,7 @@ int main()
 }
 
 
-bool test_vertex_position_by_coord(const gridgraph & grid)
+bool test_vertex_position_by_coord(const gridgraph<char> & grid)
 {
 	bool passing = true;
 	unsigned int length = grid.get_size();
@@ -54,7 +54,7 @@ bool test_vertex_position_by_coord(const gridgraph & grid)
 
 
 
-bool test_vertex_coord_by_position(const gridgraph & grid)
+bool test_vertex_coord_by_position(const gridgraph<char> & grid)
 {
 	bool passing = true;
 	unsigned int length = grid.get_size();
@@ -85,7 +85,7 @@ bool test_vertex_coord_by_position(const gridgraph & grid)
 
 
 
-bool test_coordinate_bounds(const gridgraph & grid)
+bool test_coordinate_bounds(const gridgraph<char> & grid)
 {
 	bool passing = true;
 	unsigned int length = grid.get_size();

@@ -15,10 +15,10 @@
  * ARGUMENTS: Uses global constants as parameters (Set in 'gridgraph.h') 
  * RETURN: Returns no values.
  */
-gridgraph::gridgraph(int rows_in_grid, int columns_in_grid)
+
+template<class T>
+gridgraph<T>::gridgraph(int rows_in_grid, int columns_in_grid) : row_size(columns_in_grid), column_size(rows_in_grid)
 {
-    row_size = columns_in_grid;
-    column_size = rows_in_grid;
     graph_init();
 }
 
@@ -27,10 +27,9 @@ gridgraph::gridgraph(int rows_in_grid, int columns_in_grid)
  * ARGUMENTS: the number of rows and the number of columns. 
  * RETURN: Returns no values.
  */
-gridgraph::gridgraph(const unsigned int & rows_in_grid, const unsigned int & columns_in_grid)
+template<class T>
+gridgraph<T>::gridgraph(const unsigned int & rows_in_grid, const unsigned int & columns_in_grid) : row_size(columns_in_grid), column_size(rows_in_grid)
 {
-    row_size = columns_in_grid;
-    column_size = rows_in_grid;
     graph_init();
 }
 
@@ -39,12 +38,11 @@ gridgraph::gridgraph(const unsigned int & rows_in_grid, const unsigned int & col
  * ARGUMENTS: the position of the vertex along the array of vertices, and its position (x, y) in the grid.
  * RETURN: Returns no values.
  */
-vertex::vertex(const unsigned int & pos, const unsigned int & x, const unsigned int & y)
+template<class T>
+vertex<T>::vertex(const unsigned int & pos, const unsigned int & x, const unsigned int & y) : position(pos), row_pos(x), column_pos(y)
 {
-    position = pos;
-    row_pos = x;
-    column_pos = y;
-    visited = false;
+
+   visited = false;
 }
 
 
@@ -52,7 +50,9 @@ vertex::vertex(const unsigned int & pos, const unsigned int & x, const unsigned 
  * ARGUMENTS: the position of the vertex along the array of vertices, and its position (x, y) in the grid.
  * RETURN: Returns no values.
  */
-corner::corner(const unsigned int & array_position, const unsigned int & row_position, const unsigned int & column_position) : vertex(array_position, row_position, column_position)
+
+template<class T>
+corner<T>::corner(const unsigned int & array_position, const unsigned int & row_position, const unsigned int & column_position) : vertex<T>(array_position, row_position, column_position)
 {}
 
 
@@ -60,7 +60,8 @@ corner::corner(const unsigned int & array_position, const unsigned int & row_pos
  * ARGUMENTS: the position of the vertex along the array of vertices, and its position (x, y) in the grid.
  * RETURN: Returns no values.
  */
-side::side(const unsigned int & array_position, const unsigned int & row_position, const unsigned int & column_position) : vertex(array_position, row_position, column_position)
+template<class T>
+side<T>::side(const unsigned int & array_position, const unsigned int & row_position, const unsigned int & column_position) : vertex<T>(array_position, row_position, column_position)
 {}
 
 
@@ -68,7 +69,9 @@ side::side(const unsigned int & array_position, const unsigned int & row_positio
  * ARGUMENTS: the position of the vertex along the array of vertices, and its position (x, y) in the grid.
  * RETURN: Returns no values.
  */
-center::center(const unsigned int & array_position, const unsigned int & row_position, const unsigned int & column_position) : vertex(array_position, row_position, column_position)
+
+template<class T>
+center<T>::center(const unsigned int & array_position, const unsigned int & row_position, const unsigned int & column_position) : vertex<T>(array_position, row_position, column_position)
 {}
 
 
@@ -77,13 +80,14 @@ center::center(const unsigned int & array_position, const unsigned int & row_pos
  * ARGUMENTS: None. Class members that are stored in the constructor act as parameters to this function. 
  * RETURN: Returns no values. 
  */
-void gridgraph::graph_init()
+template<class T>
+void gridgraph<T>::graph_init()
 {
     array_length = row_size * column_size;
-    gridArray = new vertex*[array_length];
+    gridArray = new vertex<T>*[array_length];
     END = (gridArray + array_length);
 
-    vertex ** current = gridArray;
+    vertex<T> ** current = gridArray;
     unsigned int array_position = 0;
     for(unsigned int row = 0; row < column_size; ++row)
         for(unsigned int column = 0; column < row_size; ++column, ++array_position, ++current){
@@ -104,7 +108,8 @@ void gridgraph::graph_init()
  * ARGUMENTS: Take the "position" of the vertex in the array, and its position in its row and column. 
  * RETURN: Returns the pointer to the new vertex.
  */
-vertex * gridgraph::determine_vertex_type(const unsigned int & position, const unsigned int & row_position, const unsigned int & column_position)
+template<class T>
+vertex<T> * gridgraph<T>::determine_vertex_type(const unsigned int & position, const unsigned int & row_position, const unsigned int & column_position)
 {
     unsigned int adjacencies = 4;
     
@@ -117,13 +122,13 @@ vertex * gridgraph::determine_vertex_type(const unsigned int & position, const u
         --adjacencies;
 
     if(adjacencies == 3)
-        return new side(position, row_position, column_position);
+        return new side<T>(position, row_position, column_position);
 
     if(adjacencies == 4)
-        return new center(position, row_position, column_position);
+        return new center<T>(position, row_position, column_position);
 
     if(adjacencies == 2)
-        return new corner(position, row_position, column_position);
+        return new corner<T>(position, row_position, column_position);
 
 
     return NULL;
@@ -135,26 +140,27 @@ vertex * gridgraph::determine_vertex_type(const unsigned int & position, const u
  * ARGUMENTS: The size of the rows in the grid and the starting address of the vertex array from the gridgraph.
  * RETURN: Returns no values.
  */
-void corner::create_adjacencies(const unsigned int & row_size, const unsigned int & column_size, vertex ** grid) 
+template<class T>
+void corner<T>::create_adjacencies(const unsigned int & row_size, const unsigned int & column_size, vertex<T> ** grid) 
 {
 	   	
-   if(row_pos == 0){ //top
-        if(column_pos == 0)         //left
+   if(vertex<T>::row_pos == 0){ //top
+        if(vertex<T>::column_pos == 0)         //left
         {
-            vertical_adj = *(grid + position + row_size);
-            horizontal_adj = *(grid + position + 1);
+            vertical_adj = *(grid + vertex<T>::position + row_size);
+            horizontal_adj = *(grid + vertex<T>::position + 1);
         } else {               //right
-            vertical_adj = *(grid + position + row_size);
-            horizontal_adj = *(grid + position - 1);
+            vertical_adj = *(grid + vertex<T>::position + row_size);
+            horizontal_adj = *(grid + vertex<T>::position - 1);
         }
    }else{       //bottom
-       if(column_pos == 0)           //left
+       if(vertex<T>::column_pos == 0)           //left
        {                   
-           vertical_adj = *(grid + position - row_size);
-           horizontal_adj = *(grid + position + 1);
+           vertical_adj = *(grid + vertex<T>::position - row_size);
+           horizontal_adj = *(grid + vertex<T>::position + 1);
        }else{                 //right
-           vertical_adj = *(grid + position - row_size);
-           horizontal_adj = *(grid + position - 1);
+           vertical_adj = *(grid + vertex<T>::position - row_size);
+           horizontal_adj = *(grid + vertex<T>::position - 1);
        }
    }
 }
@@ -163,33 +169,35 @@ void corner::create_adjacencies(const unsigned int & row_size, const unsigned in
  * ARGUMENTS: The size of the rows in the grid and the starting address of the vertex array from the gridgraph.
  * RETURN: Returns no values.
  */
-void side::create_adjacencies(const unsigned int & row_size, const unsigned int & column_size, vertex ** grid) 
+
+template<class T>
+void side<T>::create_adjacencies(const unsigned int & row_size, const unsigned int & column_size, vertex<T> ** grid) 
 {
 
-    if(row_pos == 0) //top side
+    if(vertex<T>::row_pos == 0) //top side
     {
-        pi_radian1st = *(grid + position + 1); //top next right
-        pi_radian2nd = *(grid + position - 1); //top next left
-        pi_radian3rd = *(grid + position + row_size); //below this side
+        pi_radian1st = *(grid + vertex<T>::position + 1); //top next right
+        pi_radian2nd = *(grid + vertex<T>::position - 1); //top next left
+        pi_radian3rd = *(grid + vertex<T>::position + row_size); //below this side
     }
-    else if(column_pos == 0) //left side
+    else if(vertex<T>::column_pos == 0) //left side
     {
-        pi_radian1st = *(grid + position + 1); //side next right
-        pi_radian2nd = *(grid + position - row_size); //above this side
-        pi_radian3rd = *(grid + position + row_size); //below this side
+        pi_radian1st = *(grid + vertex<T>::position + 1); //side next right
+        pi_radian2nd = *(grid + vertex<T>::position - row_size); //above this side
+        pi_radian3rd = *(grid + vertex<T>::position + row_size); //below this side
 
     }
-    else if(row_pos == column_size - 1) // bottom side
+    else if(vertex<T>::row_pos == column_size - 1) // bottom side
     {
-        pi_radian1st = *(grid + position + 1); //bottom next right
-        pi_radian2nd = *(grid + position - row_size); //above this side
-        pi_radian3rd = *(grid + position - 1); //bottom next left
+        pi_radian1st = *(grid + vertex<T>::position + 1); //bottom next right
+        pi_radian2nd = *(grid + vertex<T>::position - row_size); //above this side
+        pi_radian3rd = *(grid + vertex<T>::position - 1); //bottom next left
     }
-    else if(column_pos == row_size - 1) // right side; 
+    else if(vertex<T>::column_pos == row_size - 1) // right side; 
     {
-        pi_radian1st = *(grid + position - row_size); //above this side
-        pi_radian2nd = *(grid + position - 1); //left of this side
-        pi_radian3rd = *(grid + position + row_size); //below this side
+        pi_radian1st = *(grid + vertex<T>::position - row_size); //above this side
+        pi_radian2nd = *(grid + vertex<T>::position - 1); //left of this side
+        pi_radian3rd = *(grid + vertex<T>::position + row_size); //below this side
     }
     else{}
 }
@@ -200,12 +208,13 @@ void side::create_adjacencies(const unsigned int & row_size, const unsigned int 
  * ARGUMENTS: The size of the rows in the grid and the starting address of the vertex array from the gridgraph.
  * RETURN: Returns no values.
  */
-void center::create_adjacencies(const unsigned int & row_size, const unsigned int & column_size, vertex ** grid) 
+template<class T>
+void center<T>::create_adjacencies(const unsigned int & row_size, const unsigned int & column_size, vertex<T> ** grid) 
 {
-    right = *(grid + position + 1);
-    up = *(grid + position - row_size);
-    left = *(grid + position - 1);
-    down = *(grid + position + row_size);
+    right = *(grid + vertex<T>::position + 1);
+    up = *(grid + vertex<T>::position - row_size);
+    left = *(grid + vertex<T>::position - 1);
+    down = *(grid + vertex<T>::position + row_size);
 }
 
 
@@ -215,7 +224,8 @@ void center::create_adjacencies(const unsigned int & row_size, const unsigned in
  * ARGUMENTS: The value to be set.
  * RETURN: Returns void.
  */
-void vertex::set_value(char value)
+template<class T>
+void vertex<T>::set_value(T value)
 {
 	character = value;
 	return;
@@ -226,7 +236,8 @@ void vertex::set_value(char value)
  * ARGUMENTS: No params.
  * RETURN: Returns the value of the thing stored within the vertex. 
  */
-char vertex::get_value(void) const
+template<class T>
+T vertex<T>::get_value(void) const
 {
 	return character;
 }
@@ -237,7 +248,8 @@ char vertex::get_value(void) const
  * ARGUMENTS: No params. 
  * RETURN: The row position data member. 
  */
-unsigned int vertex::get_row_pos(void) const
+template<class T>
+unsigned int vertex<T>::get_row_pos(void) const
 {
     return row_pos;
 }
@@ -247,7 +259,8 @@ unsigned int vertex::get_row_pos(void) const
  * ARGUMENTS: No params. 
  * RETURN: The colomn position data member. 
  */
-unsigned int vertex::get_column_pos(void) const
+template<class T>
+unsigned int vertex<T>::get_column_pos(void) const
 {
     return column_pos;
 }
@@ -257,7 +270,8 @@ unsigned int vertex::get_column_pos(void) const
  * ARGUMENTS: No params.
  * RETURN: The position data member. 
  */
-unsigned int vertex::get_position(void) const
+template<class T>
+unsigned int vertex<T>::get_position(void) const
 {
     return position;
 }
@@ -267,9 +281,10 @@ unsigned int vertex::get_position(void) const
  * ARGUMENTS: No params.
  * RETURN: Returns no values. 
  */
-gridgraph::~gridgraph()
+template<class T>
+gridgraph<T>::~gridgraph()
 {
-    vertex ** temp = gridArray;
+    vertex<T> ** temp = gridArray;
     if(gridArray)
     {
         while(temp < END)
@@ -290,7 +305,8 @@ gridgraph::~gridgraph()
  * ARGUMENTS: No params.
  * RETURN: Returns no values. 
  */
-corner::~corner()
+template<class T>
+corner<T>::~corner()
 {}
 
 
@@ -298,7 +314,8 @@ corner::~corner()
  * ARGUMENTS: No params.
  * RETURN: Returns no values. 
  */
-side::~side()
+template<class T>
+side<T>::~side()
 {}
 
 
@@ -306,7 +323,8 @@ side::~side()
  * ARGUMENTS: No params.
  * RETURN: Returns no values. 
  */
-center::~center()
+template<class T>
+center<T>::~center()
 {}
 
 
@@ -314,7 +332,8 @@ center::~center()
  * ARGUMENTS: No params.
  * RETURN: Returns no values. 
  */
-vertex::~vertex()
+template<class T>
+vertex<T>::~vertex()
 {}
 
 
@@ -325,10 +344,11 @@ vertex::~vertex()
  * ARGUMENTS: No params.
  * RETURN: Returns no values.  
  */
-void gridgraph::display_as_grid(void) const
+template<class T>
+void gridgraph<T>::display_as_grid(void) const
 {
     cout << endl;
-    vertex ** temp = gridArray;
+    vertex<T> ** temp = gridArray;
     for(unsigned int i = 0; i < column_size; ++i)
     {
         for(unsigned int j = 0; j < row_size; ++j)
@@ -350,9 +370,10 @@ void gridgraph::display_as_grid(void) const
  * ARGUMENTS: No params.
  * RETURN: Returns no values.
  */
-void gridgraph::display_vertices(void) const
+template<class T>
+void gridgraph<T>::display_vertices(void) const
 {
-    vertex ** start = gridArray;
+    vertex<T> ** start = gridArray;
     while(start < END)
     {
         for(unsigned int i = 0; i < row_size; ++i, ++start){
@@ -370,10 +391,11 @@ void gridgraph::display_vertices(void) const
  * ARGUMENTS: No params.
  * RETURN: Returns no values.
  */
-void corner::display()
+template<class T>
+void corner<T>::display()
 {
-	cout << position << '\t'
-	     << "corner\t" << '(' << row_pos << ", " << column_pos << ')' << " -> " 
+	cout << vertex<T>::position << '\t'
+	     << "corner\t" << '(' << vertex<T>::row_pos << ", " << vertex<T>::column_pos << ')' << " -> " 
 	     << "((" << vertical_adj->get_row_pos()   << ", " << vertical_adj->get_column_pos()   << ')'  << ", " 
 	     << '('  << horizontal_adj->get_row_pos() << ", " << horizontal_adj->get_column_pos() << "))" << endl;
 }
@@ -383,10 +405,11 @@ void corner::display()
  * ARGUMENTS: No params.
  * RETURN: Returns no values.
  */
-void side::display()
+template<class T>
+void side<T>::display()
 {
-	cout << position << '\t'
-	     << "side\t" << '(' << row_pos << ", " << column_pos << ')' << " -> " 
+	cout << vertex<T>::position << '\t'
+	     << "side\t" << '(' << vertex<T>::row_pos << ", " << vertex<T>::column_pos << ')' << " -> " 
 	     << "((" << pi_radian1st->get_row_pos() << ", " << pi_radian1st->get_column_pos() << ')'  << ", " 
 	     << '('  << pi_radian2nd->get_row_pos() << ", " << pi_radian2nd->get_column_pos() << ')'  << ", " 
 	     << '('  << pi_radian3rd->get_row_pos() << ", " << pi_radian3rd->get_column_pos() << "))" << endl;
@@ -396,10 +419,11 @@ void side::display()
  * ARGUMENTS: No params.
  * RETURN: Returns no values.
  */
-void center::display()
+template<class T>
+void center<T>::display()
 {
-    cout << position << '\t'
-	 << "center\t" << '(' << row_pos << ", " << column_pos << ')' <<  " -> " 
+    cout << vertex<T>::position << '\t'
+	 << "center\t" << '(' << vertex<T>::row_pos << ", " << vertex<T>::column_pos << ')' <<  " -> " 
 	 << "((" << right->get_row_pos() << ", " << right->get_column_pos() << ')' << ", " 
 	 << '('  << up->get_row_pos()    << ", " << up->get_column_pos()    << ')' << ", "
 	 << '('  << left->get_row_pos()  << ", " << left->get_column_pos()  << ')' << ", "
@@ -412,14 +436,17 @@ void center::display()
  * ARGUMENTS: Dependent on usage.
  * RETURN: Returns no values. 
  */
-void vertex::expand(){}
+template<class T>
+void vertex<T>::expand(){}
 
 
 /* FUNCTION: An empty function "to be determined" by whatever algorithm is being implemented.
  * ARGUMENTS: Dependent on usage.
  * RETURN: Returns no values. 
  */
-void corner::expand(){
+template<class T>
+void corner<T>::expand()
+{
 	horizontal_adj->expand();
 	vertical_adj->expand();
 }
@@ -429,7 +456,8 @@ void corner::expand(){
  * ARGUMENTS: Dependent on usage.
  * RETURN: Returns no values. 
  */
-void side::expand(){
+template<class T>
+void side<T>::expand(){
 	pi_radian1st->expand();
 	pi_radian2nd->expand();
 	pi_radian3rd->expand();
@@ -440,7 +468,8 @@ void side::expand(){
  * ARGUMENTS: Dependent on usage.
  * RETURN: Returns no values. 
  */
-void center::expand()
+template<class T>
+void center<T>::expand()
 {
 	right->expand();
 	up->expand();
@@ -455,15 +484,16 @@ void center::expand()
  * ARGUMENTS:
  * RETURN:
  */
-bool gridgraph::invalid_coordinate(unsigned int row, unsigned int column) const
+template<class T>
+bool gridgraph<T>::invalid_coordinate(unsigned int row, unsigned int column) const
 {
 	return row < 0 || column < 0 || (gridArray + (row * column)) > END;
 }
 
-
-bool gridgraph::get_coordinate_by_position(unsigned int position, unsigned int & row, unsigned int & column) const
+template<class T>
+bool gridgraph<T>::get_coordinate_by_position(unsigned int position, unsigned int & row, unsigned int & column) const
 {
-	vertex ** target = (gridArray + position);
+	vertex<T> ** target = (gridArray + position);
 	if(position < 0 || target > END)
 		return false;
 
@@ -473,8 +503,8 @@ bool gridgraph::get_coordinate_by_position(unsigned int position, unsigned int &
 }
 
 
-
-bool gridgraph::get_position_by_coordinate(unsigned int & position, unsigned int row, unsigned int column) const
+template<class T>
+bool gridgraph<T>::get_position_by_coordinate(unsigned int & position, unsigned int row, unsigned int column) const
 {
 	if(invalid_coordinate(row, column))
 		return false;
@@ -488,15 +518,16 @@ bool gridgraph::get_position_by_coordinate(unsigned int & position, unsigned int
  * ARGUMENTS:
  * RETURN:
  */
-
-char gridgraph::get_value_at_cord(unsigned int row, unsigned int column) const 
+template<class T>
+T gridgraph<T>::get_value_at_cord(unsigned int row, unsigned int column) const 
 {
 	if(invalid_coordinate(row, column))
 		return '\0';
 	return (*(gridArray + (row * row_size) + column))->get_value();  
 }
 
-void gridgraph::set_value_at_cord(char to_set, unsigned int row, unsigned int column)
+template<class T>
+void gridgraph<T>::set_value_at_cord(T to_set, unsigned int row, unsigned int column)
 {
 	if(invalid_coordinate(row, column))
 		return;
@@ -504,11 +535,11 @@ void gridgraph::set_value_at_cord(char to_set, unsigned int row, unsigned int co
 	return;
 }
 
-
-void gridgraph::get_all_values(char * to_get) const
+template<class T>
+void gridgraph<T>::get_all_values(T * to_get) const
 {
-	char * temp = to_get;
-	vertex ** current = gridArray;
+	T * temp = to_get;
+	vertex<T> ** current = gridArray;
 	while(current < END)
 	{
 		*temp = (*current)->get_value();
@@ -518,11 +549,11 @@ void gridgraph::get_all_values(char * to_get) const
 }
 	
 
-
-void gridgraph::set_all_values(char * to_set)
+template<class T>
+void gridgraph<T>::set_all_values(T * to_set)
 {
-	char * temp = to_set;
-	vertex ** current = gridArray;
+	T * temp = to_set;
+	vertex<T> ** current = gridArray;
 	while(current < END)
 	{
 		(*current)->set_value(*temp);
@@ -531,4 +562,8 @@ void gridgraph::set_all_values(char * to_set)
 	}
 }	
 
-
+template class gridgraph<char>;
+template class vertex<char>;
+template class side<char>;
+template class corner<char>;
+template class center<char>;
