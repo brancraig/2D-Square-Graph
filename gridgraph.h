@@ -35,8 +35,8 @@ class vertex
 
         void set_value(char value);
         char get_value(void) const;
-
-        unsigned int get_position(void) const;
+	
+	unsigned int get_position(void) const;
         unsigned int get_row_pos(void) const;
         unsigned int get_column_pos(void) const;
 
@@ -114,9 +114,22 @@ class gridgraph
         void display_vertices(void) const;
         void display_as_grid(void) const;
 
+	bool invalid_coordinate(unsigned int row, unsigned int column) const;
 	bool get_coordinate_by_position(unsigned int position, unsigned int & row, unsigned int & column) const;
+	bool get_position_by_coordinate(unsigned int & position, unsigned int row, unsigned int column) const;
+	
 	char get_value_at_cord(unsigned int row, unsigned int column) const; 
-       
+	void set_value_at_cord(char to_set, unsigned int row, unsigned int column);
+
+        void get_all_values(char * to_get) const;
+        void set_all_values(char * to_set);
+
+	unsigned int get_size(void) const { return array_length; }
+	unsigned int get_row_size(void) const { return row_size; }
+	unsigned int get_column_size(void) const { return column_size; }
+		
+
+
 
     protected:
         vertex ** gridArray;

@@ -5,8 +5,8 @@ int main()
 {
 	
 
-	int rows = 10;
-	int columns = 10;
+	int rows = 5;
+	int columns = 5;
 
 	cout << "Number of rows (column size): " << rows << endl;
 	cout << "Number of columns (row size): " << columns << endl << endl;

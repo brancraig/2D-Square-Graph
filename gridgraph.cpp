@@ -455,6 +455,12 @@ void center::expand()
  * ARGUMENTS:
  * RETURN:
  */
+bool gridgraph::invalid_coordinate(unsigned int row, unsigned int column) const
+{
+	return row < 0 || column < 0 || (gridArray + (row * column)) > END;
+}
+
+
 bool gridgraph::get_coordinate_by_position(unsigned int position, unsigned int & row, unsigned int & column) const
 {
 	vertex ** target = (gridArray + position);
@@ -467,6 +473,17 @@ bool gridgraph::get_coordinate_by_position(unsigned int position, unsigned int &
 }
 
 
+
+bool gridgraph::get_position_by_coordinate(unsigned int & position, unsigned int row, unsigned int column) const
+{
+	if(invalid_coordinate(row, column))
+		return false;
+
+	position = (*(gridArray + (row * row_size) + column))->get_position();
+	return true;
+}
+
+
 /* FUNCTION:
  * ARGUMENTS:
  * RETURN:
@@ -474,8 +491,44 @@ bool gridgraph::get_coordinate_by_position(unsigned int position, unsigned int &
 
 char gridgraph::get_value_at_cord(unsigned int row, unsigned int column) const 
 {
-	if(row < 0 || column < 0 || (gridArray + row * column) > END)
+	if(invalid_coordinate(row, column))
 		return '\0';
-	return (*(gridArray + row * column))->get_value();  
+	return (*(gridArray + (row * row_size) + column))->get_value();  
+}
+
+void gridgraph::set_value_at_cord(char to_set, unsigned int row, unsigned int column)
+{
+	if(invalid_coordinate(row, column))
+		return;
+	(*(gridArray + (row * row_size) + column))->set_value(to_set);
+	return;
+}
+
+
+void gridgraph::get_all_values(char * to_get) const
+{
+	char * temp = to_get;
+	vertex ** current = gridArray;
+	while(current < END)
+	{
+		*temp = (*current)->get_value();
+		++temp;
+		++current;
+	}
+}
+	
+
+
+void gridgraph::set_all_values(char * to_set)
+{
+	char * temp = to_set;
+	vertex ** current = gridArray;
+	while(current < END)
+	{
+		(*current)->set_value(*temp);
+		++temp;
+		++current;
+	}
 }	
+
 

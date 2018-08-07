@@ -4,7 +4,7 @@ CC=g++
 CFLAGS=-c -Wall
 DEBUGFLAGS=-g -Wall
 TESTOUTPUT=testexec.out
-RUNGDB=gdb $(TESTOUPUT)
+RUNGDB=gdb
 OUTPUTFILE=gridexec.out
 MEMTEST=valgrind --leak-check=full
 
@@ -12,6 +12,11 @@ all: gridgraph
 
 allrun: gridgraph 
 	./$(OUTPUTFILE)
+
+test: gridgraph.o testmain.o
+	$(CC) $(DEBUGFLAGS) gridgraph.o testmain.o -o $(TESTOUTPUT)
+	./$(TESTOUTPUT)
+
 
 debug:  gridgraph.o gridmain.o
 	$(CC) $(DEBUGFLAGS) gridgraph.o gridmain.o -o $(TESTOUTPUT)
@@ -30,6 +35,9 @@ gridgraph.o: gridgraph.cpp
 
 gridmain.o: gridmain.cpp
 	$(CC) $(CFLAGS) gridmain.cpp
+
+testmain.o: testmain.cpp
+	$(CC) $(CFLAGS) testmain.cpp
 
 clean:
 	rm *.o *.out
