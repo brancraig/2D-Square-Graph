@@ -42,7 +42,7 @@ class vertex
 
 
     protected:
-	T character;
+	T value;
 	bool visited;
 	
 
@@ -109,15 +109,15 @@ template<class T>
 class gridgraph
 {
     public:
-	gridgraph(int = NUMBER_OF_ROWS, int = NUMBER_OF_COLUMNS);
-        gridgraph(const unsigned int & number_of_rows, const unsigned int & number_of_columns);
-;
+	gridgraph(int = NUMBER_OF_ROWS, int = NUMBER_OF_COLUMNS); //default constructor
+        gridgraph(const unsigned int & number_of_rows, const unsigned int & number_of_columns); //argument constructor
+	gridgraph(const gridgraph<T> &); //copy constructor
         ~gridgraph();
 
         void display_vertices(void) const;
         void display_as_grid(void) const;
 
-	bool invalid_coordinate(unsigned int row, unsigned int column) const;
+	bool valid_coordinate(unsigned int row, unsigned int column) const;
 	bool get_coordinate_by_position(unsigned int position, unsigned int & row, unsigned int & column) const;
 	bool get_position_by_coordinate(unsigned int & position, unsigned int row, unsigned int column) const;
 	

@@ -34,6 +34,31 @@ gridgraph<T>::gridgraph(const unsigned int & rows_in_grid, const unsigned int & 
 }
 
 
+/* FUNCTION: Copy constructor for the gridgraph class
+ * ARGUMENTS: Another gridgraph. 
+ * RETURN: Returns no values.
+ */
+template<class T>
+gridgraph<T>::gridgraph(const gridgraph<T> & to_copy) : row_size(to_copy.row_size), column_size(to_copy.column_size)
+{
+   //initialize the new graph	
+   graph_init();
+
+   //copy the values
+   vertex<T> * dest = *gridArray;
+   vertex<T> * source = *to_copy.gridArray;
+   vertex<T> * end = *END;
+   while(dest < end)
+   {
+	   dest->set_value(source->get_value());
+	   ++dest;
+	   ++source;
+   }
+
+
+
+}
+
 /* FUNCTION: Constructor for abstract base vertex.
  * ARGUMENTS: the position of the vertex along the array of vertices, and its position (x, y) in the grid.
  * RETURN: Returns no values.
@@ -225,9 +250,9 @@ void center<T>::create_adjacencies(const unsigned int & row_size, const unsigned
  * RETURN: Returns void.
  */
 template<class T>
-void vertex<T>::set_value(T value)
+void vertex<T>::set_value(T to_set)
 {
-	character = value;
+	value = to_set;
 	return;
 }
 
@@ -239,7 +264,7 @@ void vertex<T>::set_value(T value)
 template<class T>
 T vertex<T>::get_value(void) const
 {
-	return character;
+	return value;
 }
 
 
@@ -480,16 +505,22 @@ void center<T>::expand()
 
 
 
+/* FUNCTION: Tests whether or not a pair of coordinates are invalid before dereferecing a pointer on the array.
+ * ARGUMENTS: The row and column coordinates.
+ * RETURN: True if the values are good. 
+ */
+template<class T>
+bool gridgraph<T>::valid_coordinate(unsigned int row, unsigned int column) const
+{
+	return !(row < 0 || column < 0 || row > row_size || column > column_size);
+}
+
+
+
 /* FUNCTION:
  * ARGUMENTS:
  * RETURN:
  */
-template<class T>
-bool gridgraph<T>::invalid_coordinate(unsigned int row, unsigned int column) const
-{
-	return row < 0 || column < 0 || (gridArray + (row * column)) > END;
-}
-
 template<class T>
 bool gridgraph<T>::get_coordinate_by_position(unsigned int position, unsigned int & row, unsigned int & column) const
 {
@@ -503,10 +534,14 @@ bool gridgraph<T>::get_coordinate_by_position(unsigned int position, unsigned in
 }
 
 
+/* FUNCTION:
+ * ARGUMENTS:
+ * RETURN:
+ */
 template<class T>
 bool gridgraph<T>::get_position_by_coordinate(unsigned int & position, unsigned int row, unsigned int column) const
 {
-	if(invalid_coordinate(row, column))
+	if(!valid_coordinate(row, column))
 		return false;
 
 	position = (*(gridArray + (row * row_size) + column))->get_position();
@@ -521,19 +556,31 @@ bool gridgraph<T>::get_position_by_coordinate(unsigned int & position, unsigned 
 template<class T>
 T gridgraph<T>::get_value_at_cord(unsigned int row, unsigned int column) const 
 {
-	if(invalid_coordinate(row, column))
-		return '\0';
+	if(!valid_coordinate(row, column))
+		return (T) NULL;
 	return (*(gridArray + (row * row_size) + column))->get_value();  
 }
+
+
+/* FUNCTION:
+ * ARGUMENTS:
+ * RETURN:
+ */
 
 template<class T>
 void gridgraph<T>::set_value_at_cord(T to_set, unsigned int row, unsigned int column)
 {
-	if(invalid_coordinate(row, column))
+	if(!valid_coordinate(row, column))
 		return;
 	(*(gridArray + (row * row_size) + column))->set_value(to_set);
 	return;
 }
+
+
+/* FUNCTION:
+ * ARGUMENTS:
+ * RETURN:
+ */
 
 template<class T>
 void gridgraph<T>::get_all_values(T * to_get) const
@@ -549,6 +596,11 @@ void gridgraph<T>::get_all_values(T * to_get) const
 }
 	
 
+/* FUNCTION:
+ * ARGUMENTS:
+ * RETURN:
+ */
+
 template<class T>
 void gridgraph<T>::set_all_values(T * to_set)
 {
@@ -561,6 +613,8 @@ void gridgraph<T>::set_all_values(T * to_set)
 		++current;
 	}
 }	
+
+
 
 template class gridgraph<char>;
 template class vertex<char>;
